@@ -1,11 +1,11 @@
 from rest_framework.views import APIView
-from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.dateparse import parse_datetime
 from .models import Vehiculo, Camara, RegistroDeteccion
 from .serializers import VehiculoSerializer, RegistroDeteccionSerializer
-
+from .services import MotorPrediccionService
+from django.utils.timezone import localtime
 
 class IngestaDeteccionView(APIView):
 
@@ -18,8 +18,7 @@ class IngestaDeteccionView(APIView):
         if not all([patente, codigo_camara, timestamp_str]):
             return Response(
                 {"error": "Faltan datos (patente_leida, codigo_camara, timestamp)"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                status=status.HTTP_400_BAD_REQUEST)
 
         try:
             camara = Camara.objects.get(codigo_identificador=codigo_camara)
@@ -27,11 +26,8 @@ class IngestaDeteccionView(APIView):
             if not camara.activa:
                 return Response({"error": "La cámara está inactiva"}, status=status.HTTP_403_FORBIDDEN)
 
-            # Buscamos el vehículo, si es la primera vez que se lo ve, lo creamos al vuelo
-            vehiculo, creado = Vehiculo.objects.get_or_create(
-                patente=patente,
-                defaults={'sospechoso': False}
-            )
+            # Buscamos el vehículo, si es la primera vez que se lo ve lo creamos al vuelo
+            vehiculo, creado = Vehiculo.objects.get_or_create(patente=patente, defaults={'sospechoso': False})
 
             timestamp = parse_datetime(timestamp_str)
             registro = RegistroDeteccion.objects.create(
@@ -40,7 +36,32 @@ class IngestaDeteccionView(APIView):
                 timestamp=timestamp
             )
 
-            return Response({"mensaje": "Detección registrada con éxito"}, status=status.HTTP_201_CREATED)
+            respuesta_data = {"mensaje": "Detección registrada con éxito"}
+
+            if vehiculo.sospechoso:
+                motor = MotorPrediccionService(factor_fuga=2.0)
+                predicciones = motor.calcular_nodos_probables(registro)
+                
+                respuesta_data["ALERTA SOSPECHOSO"] = True
+                respuesta_data["predicciones_escape"] = predicciones
+                
+                print(f"¡ALERTA! Auto sospechoso detectado: {vehiculo.patente}")
+                print(f"Último avistamiento: {camara.codigo_identificador} ({camara.direccion})")
+                print("Cámaras de bloqueo recomendadas:")
+                for p in predicciones:
+                    llegada_desde = localtime(p['ventana_llegada']['desde'])
+                    llegada_hasta = localtime(p['ventana_llegada']['hasta'])
+
+                    t_desde = llegada_desde.strftime('%H:%M:%S')
+                    t_hasta = llegada_hasta.strftime('%H:%M:%S')
+
+                    print(f" -> {p['camara_destino']} por calle {p['calle']}")
+                    print(f"    Tiempo de intercepción {t_desde} y las {t_hasta}")
+                    print("\n\n\n")
+
+
+
+            return Response(respuesta_data, status=status.HTTP_201_CREATED)
 
         except Camara.DoesNotExist:
             return Response({"error": "Cámara no encontrada"}, status=status.HTTP_404_NOT_FOUND)
