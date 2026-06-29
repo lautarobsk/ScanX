@@ -1,8 +1,11 @@
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.dateparse import parse_datetime
 from .models import Vehiculo, Camara, RegistroDeteccion
+from .serializers import VehiculoSerializer, RegistroDeteccionSerializer
+
 
 class IngestaDeteccionView(APIView):
 
@@ -43,4 +46,24 @@ class IngestaDeteccionView(APIView):
             return Response({"error": "Cámara no encontrada"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class HistorialVehiculoView(APIView):
+
+    def get(self, request, patente):
+        try:
+            detecciones = RegistroDeteccion.objects.filter(vehiculo__patente=patente)
+            
+            if not detecciones.exists():
+                return Response(
+                    {"mensaje": f"No se encontraron registros de detección de la patente : {patente}."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            serializer = RegistroDeteccionSerializer(detecciones, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
