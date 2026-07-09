@@ -1,3 +1,5 @@
 django
 djangorestframework
 requests
+leaflet
+django-cors-headers
