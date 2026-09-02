@@ -18,9 +18,14 @@ class TramoCalleSerializer(serializers.ModelSerializer):
         
 
 class RegistroDeteccionSerializer(serializers.ModelSerializer):
+
+    camara_codigo = serializers.CharField(source='camara.codigo_identificador', read_only=True)
+    latitud = serializers.CharField(source='camara.latitud', read_only=True)
+    longitud = serializers.CharField(source='camara.longitud', read_only=True)
+
     class Meta:
         model = RegistroDeteccion
-        fields = ['vehiculo', 'camara', 'timestamp', 'fecha_registro_sistema']
+        fields = ['id', 'timestamp', 'camara_codigo', 'latitud', 'longitud']
         read_only_fields = ['fecha_registro_sistema']
 
 
