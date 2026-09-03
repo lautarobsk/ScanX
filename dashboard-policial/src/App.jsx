@@ -1,7 +1,10 @@
+import MapaView from "./components/MapaView";
+
 function App() {
-
-  return 
-
+  return (
+    <MapaView />
+  );
 }
 
-export default App
+export default App;
+
