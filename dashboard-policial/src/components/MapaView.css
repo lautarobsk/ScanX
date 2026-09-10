@@ -1,0 +1,8 @@
+.punto-tactico {
+    background-color: #ff0000;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 8px red;
+    width: 100%;
+    height: 100%;
+}

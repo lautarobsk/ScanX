@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-
+import "./MapaView.css";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
+
 let DefaultIcon = L.icon({
   iconUrl: markerIconPng,
   shadowUrl: markerShadowPng,
@@ -36,14 +43,21 @@ const MapaView = () => {
     };
 
     pedirDatosADjango();
-    const radar = setInterval(pedirDatosADjango, 9000);
+    const radar = setInterval(pedirDatosADjango, 25000);
     return () => clearInterval(radar);
   }, []);
 
-  // Aca filtro coordenadas y luego lo guardo en un nuevo array para poder dibujar las polilinea
+  // Aca filtro las coordenadas y luego lo guardo en un nuevo array para poder dibujar las polilinea
   const coordenadasRuta = historial
     .filter((registro) => registro.latitud && registro.longitud)
     .map((registro) => [registro.latitud, registro.longitud]);
+
+  const iconoTactico = L.divIcon({
+    className: "punto-tactico",
+    html: "",
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
 
   return (
     <div
@@ -70,6 +84,7 @@ const MapaView = () => {
             <Marker
               key={registro.id}
               position={[registro.latitud, registro.longitud]}
+              icon={iconoTactico}
             >
               <Popup>
                 <strong>Cámara:</strong> {registro.camara_codigo} <br />

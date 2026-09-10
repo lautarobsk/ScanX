@@ -6,11 +6,12 @@ from .models import Vehiculo, Camara, RegistroDeteccion
 from .serializers import VehiculoSerializer, RegistroDeteccionSerializer
 from .services import MotorPrediccionService
 from django.utils.timezone import localtime
+from django.utils import timezone
+from datetime import timedelta
 
 class IngestaDeteccionView(APIView):
 
     def post(self, request):
-        # Extraemos los datos crudos que nos manda la cámara
         patente = request.data.get('patente_leida')
         codigo_camara = request.data.get('codigo_camara')
         timestamp_str = request.data.get('timestamp')
@@ -25,8 +26,7 @@ class IngestaDeteccionView(APIView):
             
             if not camara.activa:
                 return Response({"error": "La cámara está inactiva"}, status=status.HTTP_403_FORBIDDEN)
-
-            # Buscamos el vehículo, si es la primera vez que se lo ve lo creamos al vuelo
+            
             vehiculo, creado = Vehiculo.objects.get_or_create(patente=patente, defaults={'sospechoso': False})
 
             timestamp = parse_datetime(timestamp_str)
@@ -69,10 +69,11 @@ class IngestaDeteccionView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class HistorialVehiculoView(APIView):
-
+    
     def get(self, request, patente):
+        tiempo_limite = timezone.now() - timedelta(hours=2)
         try:
-            detecciones = RegistroDeteccion.objects.filter(vehiculo__patente=patente)
+            detecciones = RegistroDeteccion.objects.filter(vehiculo__patente=patente, timestamp__gte=tiempo_limite)
             
             if not detecciones.exists():
                 return Response(
