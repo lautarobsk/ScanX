@@ -8,6 +8,7 @@ from .services import MotorPrediccionService
 from django.utils.timezone import localtime
 from django.utils import timezone
 from datetime import timedelta
+from rest_framework.permissions import DjangoModelPermissions
 
 class IngestaDeteccionView(APIView):
 
@@ -69,6 +70,8 @@ class IngestaDeteccionView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class HistorialVehiculoView(APIView):
+    permission_classes = [DjangoModelPermissions]
+    queryset = RegistroDeteccion.objects.none()
     
     def get(self, request, patente):
         tiempo_limite = timezone.now() - timedelta(hours=2)

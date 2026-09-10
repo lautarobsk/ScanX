@@ -12,6 +12,7 @@ import "./MapaView.css";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
 
+
 let DefaultIcon = L.icon({
   iconUrl: markerIconPng,
   shadowUrl: markerShadowPng,
@@ -29,9 +30,17 @@ const MapaView = () => {
 
   useEffect(() => {
     const pedirDatosADjango = async () => {
+      const token = import.meta.env.VITE_API_TOKEN;
+      console.log("Mi token cargado es:", token);
       try {
         const respuesta = await fetch(
-          `http://127.0.0.1:8000/api/tracker/historial/${patenteBuscada}/`,
+          `http://127.0.0.1:8000/api/tracker/historial/${patenteBuscada}/`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+            }
+          }
         );
         if (respuesta.ok) {
           const datos = await respuesta.json();
