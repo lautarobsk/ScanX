@@ -76,6 +76,13 @@ const MapaView = () => {
     iconAnchor: [7, 7],
   });
 
+  const iconoCamara = L.divIcon({
+    className: "icono-camara",
+    html: "",
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+
   return (
     <div
       style={{
@@ -107,6 +114,22 @@ const MapaView = () => {
                 <strong>Cámara:</strong> {registro.camara_codigo} <br />
                 <strong>Hora:</strong>{" "}
                 {new Date(registro.timestamp).toLocaleTimeString("es-AR")}
+              </Popup>
+            </Marker>
+          ) : null,
+        )}
+
+      {camaras.map((camara) =>
+          camara.latitud && camara.longitud ? (
+            <Marker
+              key={camara.codigo_identificador}
+              position={[camara.latitud, camara.longitud]}
+              icon={iconoCamara}
+            >
+              <Popup>
+                <strong>Cámara:</strong> {camara.codigo_identificador} <br />
+                <strong>Estado:</strong> {camara.activa ? "🟢 Activa" : "🔴 Inactiva"} <br />
+                <strong>Dirección:</strong> {camara.direccion}
               </Popup>
             </Marker>
           ) : null,
