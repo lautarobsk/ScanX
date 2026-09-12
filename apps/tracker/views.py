@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.dateparse import parse_datetime
 from .models import Vehiculo, Camara, RegistroDeteccion
-from .serializers import VehiculoSerializer, RegistroDeteccionSerializer
+from .serializers import RegistroDeteccionSerializer, CamaraSerializer
 from .services import MotorPrediccionService
 from django.utils.timezone import localtime
 from django.utils import timezone
@@ -74,7 +74,7 @@ class HistorialVehiculoView(APIView):
     queryset = RegistroDeteccion.objects.none()
     
     def get(self, request, patente):
-        tiempo_limite = timezone.now() - timedelta(hours=2)
+        tiempo_limite = timezone.now() - timedelta(hours=2000)
         try:
             detecciones = RegistroDeteccion.objects.filter(vehiculo__patente=patente, timestamp__gte=tiempo_limite)
             
@@ -92,3 +92,8 @@ class HistorialVehiculoView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class GetCamarasView(APIView):
+    def get(self, request, format=None):
+        camaras = Camara.objects.all()
+        serializer = CamaraSerializer(camaras, many=True)
+        return Response(serializer.data)

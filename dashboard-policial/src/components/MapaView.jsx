@@ -11,7 +11,7 @@ import "leaflet/dist/leaflet.css";
 import "./MapaView.css";
 import markerIconPng from "leaflet/dist/images/marker-icon.png";
 import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
-
+import axios from "axios";
 
 let DefaultIcon = L.icon({
   iconUrl: markerIconPng,
@@ -28,33 +28,41 @@ const MapaView = () => {
   const [historial, setHistorial] = useState([]);
   const patenteBuscada = "AB123CD";
 
+  const [camaras, setCamaras] = useState([]);
+
   useEffect(() => {
-    const pedirDatosADjango = async () => {
-      const token = import.meta.env.VITE_API_TOKEN;
-      console.log("Mi token cargado es:", token);
-      try {
-        const respuesta = await fetch(
-          `http://127.0.0.1:8000/api/tracker/historial/${patenteBuscada}/`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Token ${token}`,
-                'Content-Type': 'application/json'
-            }
-          }
-        );
-        if (respuesta.ok) {
-          const datos = await respuesta.json();
-          setHistorial(datos);
+    const token = import.meta.env.VITE_API_TOKEN;
+    const configSeguridad = {
+        headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
         }
+    };
+
+    const pedirDatosADjango = async () => {
+      try {
+        const respuesta = await axios.get(`http://127.0.0.1:8000/api/tracker/historial/${patenteBuscada}/`, configSeguridad);
+        setHistorial(respuesta.data);
       } catch (error) {
-        console.error("Error al intentar hablar con Django:", error);
+        console.error("Error al pedir historial:", error.response ? error.response.data : error.message);
+      }
+    };
+
+    const getCamaras = async () => {
+      try {
+        const respuesta = await axios.get("http://127.0.0.1:8000/api/tracker/getCamaras/", configSeguridad);
+        setCamaras(respuesta.data);
+      } catch (error) {
+        console.error("Error al pedir cámaras:", error.response ? error.response.data : error.message);
       }
     };
 
     pedirDatosADjango();
+    getCamaras();
     const radar = setInterval(pedirDatosADjango, 25000);
     return () => clearInterval(radar);
   }, []);
+
 
   // Aca filtro las coordenadas y luego lo guardo en un nuevo array para poder dibujar las polilinea
   const coordenadasRuta = historial
