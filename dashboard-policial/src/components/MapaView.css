@@ -1,3 +1,7 @@
+.mapa-oscuro {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(85%);
+}
+
 .punto-tactico {
     background-color: #ff0000;
     border-radius: 50%;
@@ -14,4 +18,44 @@
     box-shadow: 0 0 8px #0088ff;
     width: 100%;
     height: 100%;
+}
+
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #121212;
+  color: white;
+}
+
+.sidebar {
+  width: 300px;
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+  padding: 20px;
+}
+
+.mapa-wrapper {
+  flex-grow: 1;
+  height: 100%;
+}
+
+.panel-info {
+  background-color: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.panel-info h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #fafafa;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.panel-info p {
+  margin: 5px 0;
+  font-size: 14px;
 }

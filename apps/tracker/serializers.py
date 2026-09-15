@@ -22,10 +22,11 @@ class RegistroDeteccionSerializer(serializers.ModelSerializer):
     camara_codigo = serializers.CharField(source='camara.codigo_identificador', read_only=True)
     latitud = serializers.CharField(source='camara.latitud', read_only=True)
     longitud = serializers.CharField(source='camara.longitud', read_only=True)
+    direccion = serializers.CharField(source='camara.direccion', read_only=True)
 
     class Meta:
         model = RegistroDeteccion
-        fields = ['id', 'timestamp', 'camara_codigo', 'latitud', 'longitud']
+        fields = ['id', 'timestamp', 'camara_codigo', 'latitud', 'longitud', 'direccion']
         read_only_fields = ['fecha_registro_sistema']
 
 
