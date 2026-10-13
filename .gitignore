@@ -3,5 +3,5 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
-db.sqlite3
-.env
+node_modules/
+.vscode/

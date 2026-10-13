@@ -1,7 +1,5 @@
 django
 djangorestframework
 requests
-leaflet
 django-cors-headers
-npm install react-leaflet leaflet
-npm install axios
+

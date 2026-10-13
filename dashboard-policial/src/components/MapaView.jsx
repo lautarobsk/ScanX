@@ -26,7 +26,8 @@ const MapaView = () => {
   const posicionCatamarca = [-28.4695, -65.7801];
 
   const [historial, setHistorial] = useState([]);
-  const patenteBuscada = "AB123CD";
+  const [patenteBuscada, setPatenteBuscada] = useState("AI297UC");
+  const [inputPatente, setInputPatente] = useState("AI297UC");
 
   const [camaras, setCamaras] = useState([]);
 
@@ -44,6 +45,7 @@ const [mostrarCamaras, setMostrarCamaras] = useState(true);
     };
 
     const pedirDatosADjango = async () => {
+      if (!patenteBuscada) return;
       try {
         const respuesta = await axios.get(
           `http://127.0.0.1:8000/api/tracker/historial/${patenteBuscada}/`,
@@ -51,10 +53,14 @@ const [mostrarCamaras, setMostrarCamaras] = useState(true);
         );
         setHistorial(respuesta.data);
       } catch (error) {
-        console.error(
-          "Error al pedir historial:",
-          error.response ? error.response.data : error.message,
-        );
+        if (error.response && error.response.status === 404) {
+          setHistorial([]);
+        } else {
+          console.error(
+            "Error al pedir historial:",
+            error.response ? error.response.data : error.message,
+          );
+        }
       }
     };
 
@@ -75,9 +81,9 @@ const [mostrarCamaras, setMostrarCamaras] = useState(true);
 
     pedirDatosADjango();
     getCamaras();
-    const radar = setInterval(pedirDatosADjango, 25000);
+    const radar = setInterval(pedirDatosADjango, 3000);
     return () => clearInterval(radar);
-  }, []);
+  }, [patenteBuscada]);
 
   // Aca filtro las coordenadas y luego lo guardo en un nuevo array para poder dibujar las polilinea
   const coordenadasRuta = historial
@@ -124,9 +130,49 @@ const [mostrarCamaras, setMostrarCamaras] = useState(true);
           </label>
       
         <div className="panel-info">
-          <h3>Sospechoso</h3>
-          <p><strong>Patente:</strong> {patenteBuscada}</p>
-          <p><strong>Estado:</strong> Rastreo Automático</p>
+          <h3>Objetivo a Rastrear</h3>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (inputPatente.trim()) setPatenteBuscada(inputPatente.trim().toUpperCase());
+            }}
+            style={{ display: "flex", gap: "6px", marginTop: "10px", marginBottom: "10px" }}
+          >
+            <input 
+              type="text" 
+              value={inputPatente}
+              onChange={(e) => setInputPatente(e.target.value.toUpperCase())}
+              placeholder="Ej: AI297UC"
+              style={{
+                flex: 1,
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #444",
+                background: "#181818",
+                color: "#00e676",
+                fontWeight: "bold",
+                fontSize: "14px",
+                letterSpacing: "1px",
+                textTransform: "uppercase"
+              }}
+            />
+            <button 
+              type="submit"
+              style={{
+                padding: "8px 12px",
+                background: "#007acc",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              Rastrear
+            </button>
+          </form>
+          <p><strong>Objetivo Activo:</strong> <span style={{ color: "#00e676", fontWeight: "bold" }}>{patenteBuscada}</span></p>
+          <p><strong>Estado:</strong> Rastreo Automatico</p>
         </div>
       
         <div className="panel-info">
